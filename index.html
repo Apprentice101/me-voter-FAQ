@@ -8,6 +8,11 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
+  /* ============================================================
+     STATE THEME — swap these per state if you want a different
+     look (each state's flag/colors are a natural starting point).
+     Keep the variable NAMES the same; only change the hex values.
+     ============================================================ */
   :root{
     --pine:#1F4E3D;
     --pine-dark:#123024;
@@ -149,6 +154,9 @@
     overflow:hidden;
   }
   .item.open{border-left-color:var(--blaze);}
+  .item.caution{border-left-color:var(--rust);}
+  .item.caution.open{border-left-color:var(--rust);}
+  .item.caution button.q .qtext{color:var(--rust);}
 
   button.q{
     width:100%;
@@ -234,8 +242,12 @@
 <body>
 <div class="wrap">
 
+  <!-- ============================================================
+       STATE HEADER — edit the mascot SVG, date badge, and text below.
+       ============================================================ -->
   <header class="top">
     <div class="cornerstack">
+      <!-- Mascot: swap this SVG for the new state's animal/symbol -->
       <svg class="moose" viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <path d="M18 30 C6 22 4 8 14 4 C22 2 28 14 30 24 C32 16 40 10 46 14 C50 17 47 26 42 32" fill="none" stroke="#E8A33D" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
         <path d="M102 30 C114 22 116 8 106 4 C98 2 92 14 90 24 C88 16 80 10 74 14 C70 17 73 26 78 32" fill="none" stroke="#E8A33D" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -260,24 +272,27 @@
     </div>
   </header>
 
-  <nav class="pills" id="pills">
-    <button class="active" data-cat="all">All</button>
-    <button data-cat="register">Register</button>
-    <button data-cat="inperson">Vote in person</button>
-    <button data-cat="mail">Vote by mail</button>
-    <button data-cat="accessible">Accessible ballots</button>
-    <button data-cat="overseas">Military & overseas</button>
-    <button data-cat="volunteer">Volunteers</button>
-  </nav>
+  <!-- ============================================================
+       ENGINE — do not need to touch this for a new state.
+       Pills below are generated automatically from CATEGORIES
+       in the script, in the order they appear there.
+       ============================================================ -->
+  <nav class="pills" id="pills"></nav>
 
   <main id="groups"></main>
 
-  <footer>
-    Voting place locations and hours can change up to 10 days before an election — check back close to Election Day. Questions about your own registration or ballot? Your municipal clerk's office is the fastest answer.
-  </footer>
+  <footer id="footerNote"></footer>
 </div>
 
 <script>
+// ============================================================
+// STATE CONTENT — replace everything in this block for a new state.
+// Everything below (until the "END STATE CONTENT" marker) is
+// specific to Maine. Nothing after that marker needs to change.
+// ============================================================
+
+const FOOTER_NOTE = "Voting place locations and hours can change up to 10 days before an election — check back close to Election Day. Questions about your own registration or ballot? Your municipal clerk's office is the fastest answer.";
+
 const DATA = [
 {
   cat: "register", catLabel: "Register to vote",
@@ -327,6 +342,13 @@ const DATA = [
     {
       q: "What if I forgot to register?",
       a: `<p>Maine has same-day voter registration — just fill out your card at the polls on Election Day. Once you're registered in Maine, it's good for life, unless you change your name or address.</p>`
+    },
+    {
+      caution: true,
+      q: "A caution for voters",
+      a: `<p><strong>Voter Beware!</strong> The site "votesafe.org" is anything but safe. It collects far more personal information than the government-sponsored site (Vote.org) and since late August sells users' data — such as names and contact information and "inferences" about them — to its business partners. Voters should be cautioned against using that site.</p>
+      <a class="linkbtn alt" href="https://popular.info/p/the-hidden-dangers-of-musks-votesafeorg" target="_blank" rel="noopener">Read the details: Popular Information</a>
+      <p style="margin-top:.9rem;">In all cases, voters should be careful about providing personal information to any site before they read the organization's privacy policy.</p>`
     },
   ]
 },
@@ -392,8 +414,9 @@ const DATA = [
         <li>Return it no later than 7 days before Election Day</li>
       </ul>
       <p>The USPS has confirmed that absentee ballots mailed back at least 7 days before Election Day are guaranteed to arrive in time to be counted.</p>
-      <p>Cutting it closer than that? Drop your ballot off in person, or at an absentee ballot drop box at your municipal office if one is available, by 8 PM on Election Day — or plan to just vote in person instead.</p>
+      <p>Cutting it closer than that? Drop your ballot off in person, or at an absentee ballot drop box at your municipal office if one is available, by 8 PM on Election Day — or plan to just vote in person instead. Where drop boxes are offered, they lock at 8:00 PM on Election Day, same as the polls.</p>
       <p>You can also drop off a ballot for a family member or neighbor — they'll need to sign it, confirming you have the right to drop it off for them.</p>
+      <div class="callout"><span class="k">If there's a problem with your signature</span>If your returned ballot's signature or affidavit is missing or doesn't match, your municipal clerk will try to reach you so you can fix it. If they can't reach you in time, you can still vote in person by 8 PM on Election Day instead.</div>
       <a class="linkbtn" href="https://www.maine.gov/sos/elections-voting/find-a-municipal-clerk-or-registrar" target="_blank" rel="noopener">Find your clerk's office</a>`
     },
     {
@@ -459,7 +482,12 @@ const DATA = [
 },
 ];
 
+// ============================================================
+// END STATE CONTENT
+// ============================================================
+
 const groupsEl = document.getElementById('groups');
+document.getElementById('footerNote').textContent = FOOTER_NOTE;
 
 function render(filter){
   groupsEl.innerHTML = '';
@@ -472,7 +500,7 @@ function render(filter){
     section.appendChild(h2);
     group.items.forEach((it, idx) => {
       const item = document.createElement('div');
-      item.className = 'item';
+      item.className = 'item' + (it.caution ? ' caution' : '');
       const btn = document.createElement('button');
       btn.className = 'q';
       btn.innerHTML = `<span class="qtext">${it.q}</span><span class="chev">+</span>`;
@@ -490,7 +518,21 @@ function render(filter){
   });
 }
 
-document.getElementById('pills').addEventListener('click', e => {
+// Build the pill nav from DATA, so categories only need to be defined once.
+const pillsEl = document.getElementById('pills');
+const allBtn = document.createElement('button');
+allBtn.className = 'active';
+allBtn.dataset.cat = 'all';
+allBtn.textContent = 'All';
+pillsEl.appendChild(allBtn);
+DATA.forEach(group => {
+  const b = document.createElement('button');
+  b.dataset.cat = group.cat;
+  b.textContent = group.catLabel;
+  pillsEl.appendChild(b);
+});
+
+pillsEl.addEventListener('click', e => {
   const b = e.target.closest('button');
   if(!b) return;
   document.querySelectorAll('#pills button').forEach(x => x.classList.remove('active'));
